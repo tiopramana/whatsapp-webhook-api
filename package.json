@@ -1,6 +1,8 @@
 {
-  "name": "webhook-api",
+  "name": "express-app",
   "version": "1.0.0",
+  "description": "Aplikasi Express pertama saya",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js"
   },
