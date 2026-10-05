@@ -1,18 +1,22 @@
-// Import Express.js
 const express = require("express");
 
-// Create an Express app
 const app = express();
 
-// Middleware to parse JSON bodies
 app.use(express.json());
 
-// Set port and verify_token
 const port = process.env.PORT || 3000;
 const verifyToken = process.env.VERIFY_TOKEN;
 
-// Route for GET requests
+// Health check
 app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    service: "whatsapp-webhook-api",
+  });
+});
+
+// Meta WhatsApp webhook verification
+app.get("/webhook/whatsapp", (req, res) => {
   const {
     "hub.mode": mode,
     "hub.challenge": challenge,
@@ -21,21 +25,22 @@ app.get("/", (req, res) => {
 
   if (mode === "subscribe" && token === verifyToken) {
     console.log("WEBHOOK VERIFIED");
-    res.status(200).send(challenge);
-  } else {
-    res.status(403).end();
+    return res.status(200).send(challenge);
   }
+
+  return res.status(403).send("Forbidden");
 });
 
-// Route for POST requests
-app.post("/", (req, res) => {
+// Meta WhatsApp webhook events
+app.post("/webhook/whatsapp", (req, res) => {
   const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19);
+
   console.log(`\n\nWebhook received ${timestamp}\n`);
   console.log(JSON.stringify(req.body, null, 2));
-  res.status(200).end();
+
+  return res.status(200).send("EVENT_RECEIVED");
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`\nListening on port ${port}\n`);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Listening on port ${port}`);
 });
